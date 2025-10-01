@@ -5,7 +5,7 @@ from math import inf as infinity
 from random import choice
 import platform
 import time
-from os import system
+import os
 
 PLAYER = -1
 COMP = +1
@@ -22,7 +22,6 @@ def evaluate(state):
         score = -1
     else:
         score = 0
-
     return score
 
 def checkWin(state, player):
@@ -36,10 +35,7 @@ def checkWin(state, player):
         [state[0][0], state[1][1], state[2][2]],
         [state[2][0], state[1][1], state[0][2]],
     ]
-    if [player, player, player] in win_state:
-        return True
-    else:
-        return False
+    return [player, player, player] in win_state
 
 def game_over(state):
     return checkWin(state, PLAYER) or checkWin(state, COMP)
@@ -53,17 +49,13 @@ def empty_cells(state):
     return cells
 
 def valid_move(x, y):
-    if [x, y] in empty_cells(board):
-        return True
-    else:
-        return False
+    return [x, y] in empty_cells(board)
 
 def set_move(x, y, player):
     if valid_move(x, y):
         board[x][y] = player
         return True
-    else:
-        return False
+    return False
 
 def minimax(state, depth, player):
     if player == COMP:
@@ -76,7 +68,7 @@ def minimax(state, depth, player):
         return [-1, -1, score]
 
     for cell in empty_cells(state):
-        x, y = cell[0], cell[1]
+        x, y = cell
         state[x][y] = player
         score = minimax(state, depth - 1, -player)
         state[x][y] = 0
@@ -94,10 +86,9 @@ def minimax(state, depth, player):
 def clean():
     os_name = platform.system().lower()
     if 'windows' in os_name:
-        system('cls')
+        os.system('cls')
     else:
-        system('clear')
-
+        os.system('clear')
 
 def print_Board(state, c_choice, p_choice):
     chars = {
@@ -136,7 +127,7 @@ def PLAYER_turn(c_choice, p_choice):
     depth = len(empty_cells(board))
     if depth == 0 or game_over(board):
         return
-    
+
     move = -1
     moves = {
         1: [0, 0], 2: [0, 1], 3: [0, 2],
@@ -163,60 +154,56 @@ def PLAYER_turn(c_choice, p_choice):
             print('Bad choice')
 
 def main():
-	clean()
-	p_choice = ''  # X or O
-	c_choice = ''  # X or O
-	first = ''  # if player chooses first
+    clean()
+    p_choice = ''
+    c_choice = ''
+    first = ''
 
-	while p_choice != 'O' and p_choice != 'X':
-	    try:
-	        print('')
-	        p_choice = input('Choose X or O\nChosen: ').upper()
-	    except (EOFError, KeyboardInterrupt):
-	        print('Bye')
-	        exit()
-	    except (KeyError, ValueError):
-	        print('Bad choice')
+    while p_choice not in ['O', 'X']:
+        try:
+            print('')
+            p_choice = input('Choose X or O\nChosen: ').upper()
+        except (EOFError, KeyboardInterrupt):
+            print('Bye')
+            exit()
+        except (KeyError, ValueError):
+            print('Bad choice')
 
-	if p_choice == 'X':
-	    c_choice = 'O'
-	else:
-	    c_choice = 'X'
+    c_choice = 'O' if p_choice == 'X' else 'X'
 
-	clean()
-	while first != 'Y' and first != 'N':
-	    try:
-	        first = input('First to start?[y/n]: ').upper()
-	    except (EOFError, KeyboardInterrupt):
-	        print('Bye')
-	        exit()
-	    except (KeyError, ValueError):
-	        print('Bad choice')
+    clean()
+    while first not in ['Y', 'N']:
+        try:
+            first = input('First to start? [y/n]: ').upper()
+        except (EOFError, KeyboardInterrupt):
+            print('Bye')
+            exit()
+        except (KeyError, ValueError):
+            print('Bad choice')
 
-	while len(empty_cells(board)) > 0 and not game_over(board):
-	    if first == 'N':
-	        ai_turn(c_choice, p_choice)
-	        first = ''
+    if first == 'N':
+        ai_turn(c_choice, p_choice)
 
-	    PLAYER_turn(c_choice, p_choice)
-	    ai_turn(c_choice, p_choice)
+    while len(empty_cells(board)) > 0 and not game_over(board):
+        PLAYER_turn(c_choice, p_choice)
+        if not game_over(board):
+            ai_turn(c_choice, p_choice)
 
-	if checkWin(board, PLAYER):
-	    clean()
-	    print(f'PLAYER turn [{p_choice}]')
-	    print_Board(board, c_choice, p_choice)
-	    print('YOU WIN!')
-	elif checkWin(board, COMP):
-	    clean()
-	    print(f'Computer turn [{c_choice}]')
-	    print_Board(board, c_choice, p_choice)
-	    print('YOU LOSE!')
-	else:
-	    clean()
-	    print_Board(board, c_choice, p_choice)
-	    print('DRAW!')
+    clean()
+    if checkWin(board, PLAYER):
+        print(f'PLAYER turn [{p_choice}]')
+        print_Board(board, c_choice, p_choice)
+        print('YOU WIN!')
+    elif checkWin(board, COMP):
+        print(f'Computer turn [{c_choice}]')
+        print_Board(board, c_choice, p_choice)
+        print('YOU LOSE!')
+    else:
+        print_Board(board, c_choice, p_choice)
+        print('DRAW!')
 
-	exit()
+    exit()
 
 if __name__ == '__main__':
-	main()
+    main()
+
